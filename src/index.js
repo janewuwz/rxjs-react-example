@@ -1,28 +1,33 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import './index.css'
-import App from './example11'
-import {Observable} from 'rxjs'
-import {
-	setObservableConfig,
-	componentFromStream,
-	createEventHandler
-} from 'recompose'
-import config from 'recompose/rxjsObservableConfig'
 
-setObservableConfig(config)
+const {Component} = React
 
-// ReactDOM.render(<App message="I'm jane" speed={1000} />, document.getElementById('root'))
+const overrideProps = (overrideProps) => (BaseComponent) => (props) =>
+  <BaseComponent {...props} {...overrideProps} />
 
-ReactDOM.render(
-  <div
-    style={{
-      marginTop: 40,
-      display: 'flex',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      textAlign: 'center'
-    }}>
-    <App />
-  </div>,
-document.getElementById('root'))
+const alwaysBob = overrideProps({name: 'Bob'})
+
+const neverRender = (BaseComponent) =>
+  class extends Component {
+    shouldComponentUpdate () {
+      return false
+    }
+    render () {
+      return <BaseComponent {...this.props} />
+    }
+  }
+
+const User = ({name}) =>
+  <div className='User'>{name}</div>
+const User2 = alwaysBob(User)
+const User3 = neverRender(User)
+
+const App = () =>
+  <div>
+    <User name='Tim' />
+    <User2 name='Joe' />
+    <User3 name='Steve' />
+  </div>
+
+ReactDOM.render(<App />, document.getElementById('root'))
